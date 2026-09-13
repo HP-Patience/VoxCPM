@@ -1,0 +1,6 @@
+interface:
+  display_name: "TTS-VoxCPM 参考音频配音"
+  short_description: "使用本地 VoxCPM2 按参考声音分段合成长文、断点续跑并拼接配音"
+  default_prompt: "使用 $tts-voxcpm-narration，根据我提供的参考音频和目标文本生成完整配音。"
+policy:
+  allow_implicit_invocation: true

@@ -8,6 +8,8 @@ Related dependencies are imported only when denoising functionality is needed.
 import os
 import tempfile
 from typing import Optional
+import soundfile as sf
+import torch
 import torchaudio
 from modelscope.pipelines import pipeline
 from modelscope.utils.constant import Tasks
@@ -32,10 +34,12 @@ class ZipEnhancer:
         Args:
             wav_path: Audio file path
         """
-        audio, sr = torchaudio.load(wav_path)
+        # WAV I/O does not need TorchCodec or its FFmpeg shared libraries.
+        samples, sr = sf.read(wav_path, dtype="float32", always_2d=True)
+        audio = torch.from_numpy(samples.T.copy())
         loudness = torchaudio.functional.loudness(audio, sr)
         normalized_audio = torchaudio.functional.gain(audio, -20 - loudness)
-        torchaudio.save(wav_path, normalized_audio, sr)
+        sf.write(wav_path, normalized_audio.T.contiguous().numpy(), sr, subtype="FLOAT")
 
     def enhance(self, input_path: str, output_path: Optional[str] = None, normalize_loudness: bool = True) -> str:
         """

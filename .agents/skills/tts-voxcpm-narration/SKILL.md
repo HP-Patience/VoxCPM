@@ -1,19 +1,19 @@
 ---
 name: tts-voxcpm-narration
-description: 使用本地 VoxCPM2，根据用户提供的参考音频和目标文本生成声音克隆配音；支持长文分段、断点续跑和完整 WAV 拼接。适用于“按这段录音的声音读这篇稿子”“用参考案例生成配音”等请求，不用于模型训练。
+description: 使用本地 VoxCPM2，根据目标文本和默认或用户指定的参考音频生成声音克隆配音；支持长文分段、断点续跑和完整 WAV 拼接。适用于“按这段录音的声音读这篇稿子”“用参考案例生成配音”等请求，不用于模型训练。
 ---
 
 # TTS-VoxCPM 参考音频配音
 
 ## 输入与默认行为
 
-需要用户的参考音频文件和要朗读的目标文本。允许文本直接粘贴或提供 UTF-8 文本文件。缺少其中之一时只询问缺失项。“参考案例”如果只是文章、网址或多个录音而未指定声音来源，先澄清；不要凭空选择说话人。
+需要要朗读的目标文本，允许直接粘贴或提供 UTF-8 文本文件。未指定参考音频时，默认使用用户已指定的 `C:\Users\wjx\Downloads\采访录音 1.wav`，无需再次询问声音来源；本次明确指定其他录音时优先使用新录音。缺少目标文本时只询问文本；选定录音不存在或不可读时，询问有效路径，不擅自换声音。本次提供多个录音而未明确选择时，先澄清。
 
 默认沿用已验证的本地方式：VoxCPM2、CUDA、仅参考音频克隆、10 推理步、CFG 2、关闭编译优化、关闭额外降噪和文本规范化。不自动转写参考音频或加载 SenseVoice。每段 seed 从 42 依次增加，段间停顿 0.3 秒。这些是本机稳定起点，不是普遍最佳配置；遵从用户明确指定的参数。
 
 - 保存原始目标文本，不擅自润色、删减、翻译或替换数学字母。需要读音改写时先确认并另存朗读稿，保留原稿。
 - 默认参考音频模式不要求参考文本。仅在用户要求极致克隆且提供准确转写时使用 `--prompt-file`；参考转写不是目标文本。不要捏造转写。
-- 音频路径只用本次用户提供的值；不要复用历史用户录音、把个人录音复制进 skill、或上传到外部服务。
+- 音频路径使用上述默认值或本次用户明确指定的值，运行时显式传给 `--reference`；不要复用其他历史录音、把个人录音复制进 skill、或未经授权上传到外部服务。
 
 ## 本机已知环境（运行前验证仍存在）
 
@@ -35,7 +35,7 @@ description: 使用本地 VoxCPM2，根据用户提供的参考音频和目标�
 
 ### PowerShell 示例
 
-把示例路径替换为当前用户输入和实际输出目录，不要原样使用占位符。
+把文本和输出目录占位符替换为实际路径；参考音频默认使用下方路径，用户指定其他录音时替换 `--reference`。
 
 ```powershell
 $env:TORCH_COMPILE_DISABLE = '1'
@@ -44,7 +44,7 @@ $env:PYTHONIOENCODING = 'utf-8'
 & 'F:\conda\Scripts\conda.exe' run --no-capture-output -n TTS_voxcpm python -u `
   'C:\Users\wjx\.codex\skills\tts-voxcpm-narration\scripts\generate.py' `
   --model-path 'C:\Users\wjx\Desktop\TTS\VoxCPM\pretrained_models\VoxCPM2' `
-  --reference 'C:\路径\参考音频.wav' `
+  --reference 'C:\Users\wjx\Downloads\采访录音 1.wav' `
   --text-file 'C:\路径\input.txt' `
   --output-dir 'C:\路径\本次输出' `
   --device cuda --steps 10 --cfg 2 --seed 42 --max-chars 110 --gap 0.3
